@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strconv"
@@ -135,13 +136,27 @@ func GetDockerInfo(client *ssh.Client) (ret []DockerInfo, err error) {
 	if err != nil {
 		return nil, err
 	}
-	stdOut, _ := session.StdoutPipe()
-	err = session.Run(DockerCMD)
+	stdIn, err := session.StdinPipe()
+	if err != nil {
+		return
+	}
+	var outBf, errBf bytes.Buffer
+	session.Stdout = &outBf
+	session.Stderr = &errBf
+	if err = session.Shell(); err != nil {
+		return
+	}
+	_, err = stdIn.Write([]byte("whereis docker\n"))
+	if err != nil {
+		return
+	}
+	fmt.Print(outBf.String())
+	_, err = stdIn.Write([]byte(DockerCMD + "\n"))
 	if err != nil {
 		return nil, err
 	}
-	res, _ := ioutil.ReadAll(stdOut)
-	for _, line := range strings.Split(string(res), "\n")[1:] {
+	//res, _ := ioutil.ReadAll(outBf)
+	for _, line := range strings.Split(outBf.String(), "\n")[1:] {
 		if line == "" {
 			continue
 		}
