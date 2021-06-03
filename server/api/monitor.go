@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"next-terminal/pkg/global"
 	"next-terminal/pkg/log"
 	"next-terminal/pkg/term"
 	"next-terminal/server/model"
@@ -304,7 +305,12 @@ func MonitorEndpoint(c echo.Context) (err error) {
 	var returnData MonitorInfo
 	switch model.AssetProto(asset.Protocol) {
 	case model.SSH:
-		terminal, err := term.NewSshClient(asset.IP, asset.Port, asset.Username, asset.Password,
+		password, err := utils.DeCryptPassword(asset.Password, global.Config.EncryptionPassword)
+		if err != nil {
+			return errors.Wrap(err, "Decrypt error")
+		}
+
+		terminal, err := term.NewSshClient(asset.IP, asset.Port, asset.Username, password,
 			asset.PrivateKey, asset.Passphrase)
 		if err != nil {
 			log.Error(err)

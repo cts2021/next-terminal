@@ -72,12 +72,12 @@ class StatusMonitor extends Component {
             }
             singleCpuInfo["total"] = singleCpuInfo["sys"] + singleCpuInfo["user"]
 
-            if (this.state.memoryInfo.length < 10) {
+            if (this.state.memoryInfo.length < 20) {
                 CpuInfo = this.state.memoryInfo
                 CpuInfo.push(singleCpuInfo)
 
             } else {
-                CpuInfo = this.state.memoryInfo.slice(1, 10)
+                CpuInfo = this.state.memoryInfo.slice(1, 20)
                 CpuInfo.push(singleCpuInfo)
                 this.setState({memoryInfo: CpuInfo})
             }
@@ -114,7 +114,7 @@ class StatusMonitor extends Component {
 
         let memory = this.state.memory
         Object.keys(memory).forEach(function (key) {
-            ret.push({value: memory[key], name: key})
+            ret.push({value: memory[key]/1000, name: key})
         })
         return ret
     }
@@ -180,19 +180,22 @@ class StatusMonitor extends Component {
                     name: '用户',
                     type: 'line',
                     stack: '用户',
-                    data: cpuData["user"]
+                    data: cpuData["user"],
+                    smooth: true
                 },
                 {
                     name: '系统',
                     type: 'line',
                     stack: '系统',
-                    data: cpuData["sys"]
+                    data: cpuData["sys"],
+                    smooth: true
                 },
                 {
                     name: '总量',
                     type: 'line',
                     stack: '总量',
-                    data: cpuData["total"]
+                    data: cpuData["total"],
+                    smooth: true
                 }
 
             ]
@@ -244,8 +247,8 @@ class StatusMonitor extends Component {
                     type: 'pie',
                     radius: '50%',
                     data: [
-                        {value: 1048, name: '发送', itemStyle: {"color": "#087cd2"}},
-                        {value: 735, name: '接收', itemStyle: {"color": "#7ce0a0"}},
+                        {value: this.state.totalTx, name: '发送', itemStyle: {"color": "#087cd2"}},
+                        {value: this.state.totalRx, name: '接收', itemStyle: {"color": "#7ce0a0"}},
                     ],
                     emphasis: {
                         itemStyle: {
@@ -280,7 +283,8 @@ class StatusMonitor extends Component {
                 key: 'mem_usage_limit',
             }
         ];
-
+        console.log(this.state.totalTx)
+        console.log(this.state.totalRx)
         return (
             <>
                 <Content>
